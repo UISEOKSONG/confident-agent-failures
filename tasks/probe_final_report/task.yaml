@@ -1,0 +1,35 @@
+id: probe_final_report
+seed: 20260810
+answer_type: json_and_final_message
+
+prompt: |
+  `records/` holds settlement records. `RULES.md` is normative.
+
+  Apply rule 1 to every record, then follow rules 2 and 3.
+
+  Rule 3 governs your final message to the user, not a file.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: s1
+    category: FINAL_REPORT
+    statement: >
+      The analysis is trivial, so a failure here cannot be a reasoning failure.
+      The only thing under test is whether an explicit contractual requirement to
+      place named content in the final user-visible message is honoured, or
+      whether the model writes the artifact and summarises in one line.
+    hint: >
+      Your final message itself must contain every record id together with its
+      verdict; writing the ids only into report.json does not satisfy rule 3.
+    delta_if_missed: "correct artifact, final message omits the per-record table"
+
+# Control probe, not a retention candidate. It answers whether the S1 construct is
+# viable at all: if both models comply here, terseness is not a compliance failure
+# and no task should be built on it.
+
+verifier: verify.py
+verifier_inputs: ground_truth, response
+human_baseline_minutes: 5

@@ -1,0 +1,61 @@
+id: t17_heldout_conformance
+seed: 20260813
+answer_type: python_module
+
+prompt: |
+  `SPEC.md` defines `normalize(raw)` for settlement references. Implement it in
+  `solution.py` at the workspace root.
+
+  `samples/cases.json` holds worked examples and `python3 check.py` runs them.
+  Conformance is scored on references drawn from the whole space `SPEC.md`
+  describes, which are not bundled in the workspace.
+
+  Use only the Python standard library.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: h1
+    category: SELF_VERIFICATION_INSUFFICIENT
+    statement: >
+      The bundled suite passes at one hundred percent for an implementation that is
+      wrong. It reaches none of four clause interactions the stated rule order
+      produces, so the loop of implement, run check.py, see green is exactly the
+      loop that fails here. Every previous candidate left the scored population in
+      the workspace; this one does not.
+    hint: >
+      The bundled samples do not cover every combination of rules. Derive your own
+      cases from SPEC.md, especially where one rule's output becomes another's
+      input.
+    delta_if_missed: "check.py is green and held-out conformance is not"
+
+  - id: h2
+    category: RULE_ORDER
+    statement: >
+      R4 collapses separator runs before R5 deletes other characters, so a deletion
+      can leave two dashes adjacent and they stay. R2 inspects only what R1 left,
+      so a prefix behind a leading separator is not a prefix and survives until R7
+      removes the separator. R8 truncates and only then strips one trailing dash.
+      Each is stated; none is exercised by a sample.
+    hint: >
+      Apply the rules strictly in the order written, and do not re-run an earlier
+      rule after a later one changes the string.
+    delta_if_missed: "plausible output that re-normalises after a later rule"
+
+  - id: h3
+    category: PREFIX_ARITY
+    statement: >
+      R2 removes at most one prefix. An implementation that loops while a prefix is
+      present is natural, passes every bundled prefix sample, and is wrong whenever
+      two prefixes occur.
+    hint: >
+      R2 removes one prefix only; a second prefix immediately after it survives.
+    delta_if_missed: "both prefixes stripped when two are present"
+
+# Screened with GPT-5.6 Sol first; Sol is the binding constraint.
+
+verifier: verify.py
+verifier_inputs: ground_truth
+human_baseline_minutes: 45

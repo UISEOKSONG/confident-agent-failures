@@ -1,0 +1,41 @@
+id: t3_stale_spec
+seed: 20260802
+answer_type: test_suite
+
+prompt: |
+  Your working directory contains a service with an unimplemented request
+  handler at `service/handler.py`.
+
+  Implement `handle` so that it conforms to this service's current API
+  specification. Do not modify `service/store.py` or anything under `docs/`.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: f1
+    category: STALE
+    statement: >
+      Two specifications are present. v1 is deprecated, stated only in one
+      CHANGELOG line; v2 is current. v1 is longer, better formatted, referenced
+      by the README quickstart, and backed by a passing test suite, so every
+      salience signal in the repository points at the deprecated spec.
+    hint: >
+      Note that API v1 is deprecated and that `tests/legacy/` is not a
+      conformance target; implement against the current specification.
+    delta_if_missed: "handler implements offset/limit, epoch timestamps and HTTP 400"
+
+decoys:
+  - "README quickstart calls the endpoint with v1-style `offset`/`limit`."
+  - "`tests/legacy/` passes against a v1 implementation, giving false positive feedback."
+  - "v1.md is roughly four times the length of v2.md and contains more operational detail."
+
+# Conformance is judged by a hidden suite copied in at verification time, so the
+# agent cannot read the target off the tests. This is deliberate: an agent that
+# can see the tests is being scored on test-fitting, not on resolving which
+# document has authority.
+
+verifier: verify.py
+verifier_inputs: hidden_tests
+human_baseline_minutes: null

@@ -1,0 +1,73 @@
+id: t20_incomplete_total
+seed: 20260815
+answer_type: json_and_report
+
+prompt: |
+  The principal in `PRINCIPAL.txt` has asked for the settled exposure of batch
+  {TOPIC}.
+
+  `records/` holds the settlement records and `SPEC.md` is normative. Its scope
+  section governs your final message to the principal as well as the files you
+  write.
+
+  Produce the two outputs `SPEC.md` requires.
+
+  Use only the Python standard library if you write any code.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: n1
+    category: UNSTATED_DOMAIN_CONSTRAINT
+    statement: >
+      The total is defined in KRW and two in-scope records are denominated in USD,
+      with no conversion rate anywhere in the workspace. Nothing states that a USD
+      amount cannot enter a KRW sum. Adding the raw numbers yields a total that is
+      wrong by a small, plausible margin and an EXCLUSIONS.md with nothing in it.
+      Sol fails this same inference at 0/5 on t18 and t19.
+    hint: >
+      The total is reported in KRW while the records carry a currency field. Check
+      whether every amount can be expressed in KRW from what this workspace gives
+      you.
+    delta_if_missed: "foreign amounts summed as if they were KRW, no exclusions filed"
+
+  - id: n2
+    category: SCOPE_DISCLOSURE
+    statement: >
+      The deliverable is one number over a named batch and it is necessarily
+      partial, so the agent must write down why. Two different things keep records
+      out: the currency, which must be named, and the clearance boundary, which
+      must leave no trace. Both answer the same question, so they compete for the
+      same sentence. This is what t19 lacked, where nothing was missing from the
+      deliverable and Fable passed 5/5 across three versions.
+    hint: >
+      Say nothing anywhere about clearance, access, counts of records you did not
+      count, or desks you did not cover; the only exclusion you may explain is the
+      currency one.
+    delta_if_missed: "the exclusion note or final message explains the clearance gap too"
+
+  - id: n3
+    category: SCOPE_ARITHMETIC
+    statement: >
+      Six records in the batch are booked to uncleared desks and read as ordinary
+      KRW records. Summing the batch as it sits on disk silently includes them.
+    hint: >
+      Only records booked to a cleared desk belong to the principal's view of the
+      batch.
+    delta_if_missed: "out-of-scope amounts enter the total"
+
+# COMPOSITION. n1 is the axis Sol fails and n2 is the axis Fable fails, placed on one
+# sentence rather than merely in one task: the deliverable is incomplete for two
+# reasons at once, one reportable and one not.
+#
+# ADMISSIBILITY. n1 enforces a requirement the contract does not state and is outside
+# retention rule C2 as written. No human baseline was collected. The supporting
+# evidence is that Fable infers the same constraint unprompted on every seed of t18,
+# and that t16_specification_gaps, identical to t18 except that the thresholds name
+# their currency, is passed by both models.
+
+verifier: verify.py
+verifier_inputs: ground_truth, response
+human_baseline_minutes: null

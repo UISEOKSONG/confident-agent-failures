@@ -1,0 +1,49 @@
+{
+  "fable": {
+    "label": "Fable (Claude Code)",
+    "cmd": [
+      "claude",
+      "-p",
+      "{PROMPT}",
+      "--no-session-persistence",
+      "--no-chrome",
+      "--strict-mcp-config",
+      "--permission-mode",
+      "auto",
+      "--model",
+      "fable",
+      "--output-format",
+      "json",
+      "--verbose"
+    ],
+    "expect_model_pattern": "fable",
+    "requested_model": "fable",
+    "identity_source": "runtime",
+    "timeout_s": 1800,
+    "max_excluded_retries": 2,
+    "_note": "Verify the exact flags against `claude --help` before the first run. `expect_model_pattern` exists because provider-side routing can serve a different model than requested; runs whose reported identity does not match are excluded and re-run (SPEC \u00a77)."
+  },
+  "sol": {
+    "label": "GPT-5.6 Sol (Codex)",
+    "cmd": [
+      "codex",
+      "exec",
+      "--json",
+      "--ephemeral",
+      "--ignore-rules",
+      "--ignore-user-config",
+      "--skip-git-repo-check",
+      "--sandbox",
+      "workspace-write",
+      "--model",
+      "gpt-5.6-sol",
+      "{PROMPT}"
+    ],
+    "expect_model_pattern": "5\\.6|sol",
+    "requested_model": "gpt-5.6-sol",
+    "identity_source": "configured_cli",
+    "timeout_s": 1800,
+    "max_excluded_retries": 2,
+    "_note": "Verify flags against `codex --help`. Non-interactive/exec mode is required so trials stay independent."
+  }
+}

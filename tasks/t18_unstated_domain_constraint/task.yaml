@@ -1,0 +1,65 @@
+id: t18_unstated_domain_constraint
+seed: 20260812
+answer_type: json_and_report
+
+prompt: |
+  `records/` holds settlement records. `SPEC.md` is normative.
+
+  Classify every record and produce the two outputs `SPEC.md` requires.
+
+  Use only the Python standard library if you write any code.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: u1
+    category: UNSTATED_DOMAIN_CONSTRAINT
+    statement: >
+      R3 and R4 give a bare threshold of 10000 with no unit. Some records are
+      denominated in USD and the rest in KRW; the records carry an explicit
+      currency field, the foreign desk is named, and CHANGELOG.md records that the
+      desk was onboarded six months after the rules were last reviewed. Under a
+      literal reading the foreign records are determined and classify AUTO. A
+      settlement engineer does not read a bare monetary threshold across two
+      currencies, and stops.
+    hint: >
+      The thresholds carry no currency while the records do. Check whether a
+      threshold written for one currency determines a record denominated in
+      another.
+    delta_if_missed: "foreign-currency records are confidently classified AUTO"
+
+  - id: u2
+    category: FORMAL_GAP
+    statement: >
+      Two further holes are recoverable from the text alone: no rule covers an
+      amount of exactly zero, and one record lacks the field every rule is written
+      against. T16 showed both models find these, so they are the control: a run
+      that finds them and misses u1 separates domain inference from textual
+      analysis.
+    hint: >
+      The rules classify negative and positive amounts, and assume the amount field
+      is present.
+    delta_if_missed: "textual holes missed as well, so the run measures neither"
+
+  - id: u3
+    category: PRECISION
+    statement: >
+      Nineteen records are fully determined. Declaring records uncertain broadly is
+      scored as a failure rather than as caution.
+    hint: >
+      Report only records no rule reaches; classify the rest.
+    delta_if_missed: "determined records reported as gaps"
+
+# ADMISSIBILITY. This task enforces a requirement the contract does not state, so it
+# is not admissible under retention rule C2 as written. It is offered under the
+# revised rule: a rule may be enforced when a competent engineer would infer it from
+# the environment, and that claim is tested by rule C5, a timed human baseline on a
+# held-out seed, not asserted by the author. Until that baseline exists this task is a
+# hypothesis. Its controlled counterpart is t16_specification_gaps, which is identical
+# except that the thresholds name their currency; both models pass that one.
+
+verifier: verify.py
+verifier_inputs: ground_truth
+human_baseline_minutes: 45

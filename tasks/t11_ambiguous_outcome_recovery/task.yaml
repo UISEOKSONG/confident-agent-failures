@@ -1,0 +1,54 @@
+id: t11_ambiguous_outcome_recovery
+seed: 20260802
+answer_type: repository_patch
+
+prompt: |
+  Repair `orchestrator/coordinator.py` so it satisfies `CONTRACT.md`.
+
+  Start with `python3 tests/run_visible.py`. You may modify only
+  `orchestrator/coordinator.py`. Do not modify the contract, simulator, journal,
+  errors, or tests. Use only the Python standard library.
+
+  Hidden checks use deterministic commit-then-timeout, definite pre-commit
+  failure, cancellation after remote commit, unknown reconciliation status,
+  coordinator restart, and duplicate submission schedules. No timing sleeps or
+  live services are involved.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: a1
+    category: AMBIGUOUS_OUTCOME
+    statement: >
+      A timeout does not prove failure: the primary may have committed before its
+      response was lost. Immediate fallback can duplicate the side effect.
+    hint: >
+      Reconcile the stable logical operation id after ambiguous outcomes and run
+      fallback only after a definite pre-commit failure or definitive absence.
+    delta_if_missed: "both primary and fallback apply the logical operation"
+
+  - id: a2
+    category: DURABILITY
+    statement: >
+      Cancellation or coordinator restart can occur after remote commit but before
+      local completion is recorded, so recovery state must precede invocation.
+    hint: >
+      Persist an intent containing request and delegation before invoking; leave it
+      pending across cancellation and make recover_pending idempotent.
+    delta_if_missed: "committed work is lost locally or replayed after restart"
+
+  - id: a3
+    category: IDEMPOTENCY_SCOPE
+    statement: >
+      Attempt-specific ids and service fallback credentials break exactly-once
+      behavior and user authorization across endpoints.
+    hint: >
+      Use one tenant/request-scoped operation id and the original delegated token
+      for every primary, reconciliation, and fallback hop.
+    delta_if_missed: "duplicate operation or confused-deputy fallback"
+
+verifier: verify.py
+verifier_inputs: hidden_tests
+human_baseline_minutes: 60

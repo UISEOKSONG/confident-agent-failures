@@ -1,0 +1,53 @@
+id: t12_delegated_fallback_lifecycle
+seed: 20260802
+answer_type: repository_patch
+
+prompt: |
+  Repair `router/router.py` so it satisfies `CONTRACT.md`.
+
+  Start with `python3 tests/run_visible.py`. You may modify only
+  `router/router.py`. Do not modify the contract, plugin/session model, errors,
+  or tests. Use only the Python standard library.
+
+  Hidden checks use deterministic primary suspension, concurrent route reload,
+  delegated fallback, cancellation, and fallback failure schedules. No timing
+  sleeps or live services are involved.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: l1
+    category: ROUTE_SNAPSHOT
+    statement: >
+      Resolving fallback only after primary failure can mix route generations when
+      reload publishes concurrently.
+    hint: >
+      Acquire and lease the complete primary/fallback route snapshot before the
+      first plugin await, then use only those objects for the request.
+    delta_if_missed: "fallback runs on a different route generation"
+
+  - id: l2
+    category: DELEGATION
+    statement: >
+      A fallback hop that opens a service session becomes a confused deputy even
+      when the primary began with the end-user credential.
+    hint: >
+      Bind every session in the route snapshot to the request's original delegated
+      token; reload and fallback must not replace it.
+    delta_if_missed: "fallback executes with service identity"
+
+  - id: l3
+    category: CANCELLATION_LIFECYCLE
+    statement: >
+      Cancellation and fallback exceptions can leak sessions or release retired
+      plugins too early unless all cleanup paths share one finally boundary.
+    hint: >
+      Close every opened session exactly once and release every snapshot lease in
+      finally; close retired plugins only after their final request lease exits.
+    delta_if_missed: "session leak, PluginClosed, or double close"
+
+verifier: verify.py
+verifier_inputs: hidden_tests
+human_baseline_minutes: 60

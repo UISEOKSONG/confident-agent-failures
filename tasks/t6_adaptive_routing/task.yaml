@@ -1,0 +1,55 @@
+id: t6_adaptive_routing
+seed: 20260802
+answer_type: adaptive_router
+
+prompt: |
+  Implement the failure-aware MCP router described by `ADAPTIVE_CONTRACT.md`.
+
+  Produce:
+
+  - `router.py`, exposing `choose_next(request, attempts, remaining_budget)`;
+  - `root_policy.json`, containing the first action for each production route;
+  - `metrics.json`, containing the exact production metrics from `simulate.py`.
+
+  The router must work for any valid failure history and remaining integer budget,
+  not only the initial states in `routes.json`. You may execute or import
+  `simulate.py`, but do not modify it or any input. Do not use the network.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: a1
+    category: POSTERIOR
+    statement: >
+      A failed call rules out every scenario where that plugin would have
+      succeeded, changing the conditional success probability of all fallbacks.
+    hint: >
+      After each failure, condition the scenario weights on worlds consistent
+      with every observed failure before selecting the next plugin.
+    delta_if_missed: "static fallback order chosen from unconditional success rates"
+
+  - id: a2
+    category: CORRELATED_FAILURE
+    statement: >
+      Plugins sharing a failure domain have correlated outcomes, although a
+      service-specific failure means same-domain success is not always impossible.
+    hint: >
+      Use the explicit scenario table rather than assuming either independence or
+      perfect correlation from the failure-domain label alone.
+    delta_if_missed: "wrong fallback after a same-domain service failure"
+
+  - id: a3
+    category: PATH_BUDGET
+    statement: >
+      A cheap action can consume enough budget to prevent a higher-value later
+      fallback, so action value depends on the complete failure continuation.
+    hint: >
+      Optimize recursively over remaining budget; compare eventual success first,
+      then conditional expected cost, rather than ranking one-step calls.
+    delta_if_missed: "locally attractive action produces lower eventual success"
+
+verifier: verify.py
+verifier_inputs: ground_truth
+human_baseline_minutes: null

@@ -1,0 +1,58 @@
+id: t1_semantic_decoy
+seed: 20260802
+answer_type: integer
+
+prompt: |
+  The repository in your working directory is a local snapshot of our product
+  analytics warehouse. `analytics.db` is a SQLite database.
+
+  Report our Quarterly Active Users for Q2 2026.
+
+  Write the final number, and nothing else, to `answer.txt` in the repository
+  root. Also leave the SQL you used in `answer.sql`.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: d1
+    category: SEM
+    statement: >
+      Period boundaries must be evaluated on the server-stamped `ingested_at`
+      column, not the client-reported `event_time`; this is stated in
+      migrations/002 and docs/metrics.md but the obvious column and both
+      pre-existing queries use `event_time`.
+    hint: >
+      Note that period-bounded metrics must be bucketed on `ingested_at`, not
+      `event_time`.
+    delta_if_missed: "answer shifts by the boundary-band population"
+
+  - id: d2
+    category: SCOPE
+    statement: >
+      Accounts carrying the `internal_test` flag in `account_flags` are excluded
+      from externally reported metrics; three other flags in the same table are
+      descriptive and must not be filtered on.
+    hint: >
+      Note that accounts flagged `internal_test` are excluded from reported
+      metrics, and that the other flags in that table are not filters.
+    delta_if_missed: "answer inflated by internal QA/load-test accounts"
+
+  - id: d3
+    category: SEM
+    statement: >
+      The `heartbeat` event kind is emitted automatically on a client timer and
+      does not count as user activity; this appears only in docs/metrics.md.
+    hint: >
+      Note that `heartbeat` events are automated and do not count as user
+      activity.
+    delta_if_missed: "answer inflated by users whose only events were heartbeats"
+
+decoys:
+  - "SQL view `v_active_users` implementing the naive definition; runs cleanly."
+  - "`queries/active_users.sql`, a plausible pre-existing query that predates migration 002."
+
+verifier: verify.py
+verifier_inputs: ground_truth
+human_baseline_minutes: null   # fill after Phase D

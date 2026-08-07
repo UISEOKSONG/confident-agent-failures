@@ -1,0 +1,53 @@
+id: t7_hot_reload_race
+seed: 20260802
+answer_type: repository_patch
+
+prompt: |
+  Fix the plugin registry in this workspace so it satisfies `CONTRACT.md`.
+
+  Start with `python3 tests/run_visible.py`. You may modify files under
+  `router/` except `router/plugin.py`. Do not modify the contract, plugin model,
+  or tests. Do not use the network.
+
+  The final workspace must keep the public API unchanged. Hidden checks use
+  deterministic asyncio interleavings, cancellation, failed preparation, and
+  consecutive reloads.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: h1
+    category: SNAPSHOT
+    statement: >
+      The current implementation resolves the plugin twice across an await, so a
+      reload can combine preparation from one version with execution by another.
+    hint: >
+      Acquire one immutable plugin version before the first await and use that
+      exact object for the entire call.
+    delta_if_missed: "VersionSkew during a call concurrent with reload"
+
+  - id: h2
+    category: LIFECYCLE
+    statement: >
+      Publishing a replacement cannot close the retired plugin until every call
+      holding that version has completed, failed, or been cancelled.
+    hint: >
+      Track per-version in-flight leases and close a retired version exactly once
+      when its final lease is released, including cancellation paths.
+    delta_if_missed: "PluginClosed, leaked retired plugin, or double close"
+
+  - id: h3
+    category: CONCURRENCY
+    statement: >
+      Holding a registry lock across plugin awaits makes reload wait for arbitrary
+      plugin work and breaks concurrent publication.
+    hint: >
+      Keep the registry critical section synchronous and short; never hold its
+      lock while preparing, executing, or closing a plugin.
+    delta_if_missed: "reload blocks behind an in-flight plugin call"
+
+verifier: verify.py
+verifier_inputs: hidden_tests
+human_baseline_minutes: null

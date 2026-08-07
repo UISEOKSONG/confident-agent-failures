@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+
+# Raw CLI transcripts contain machine-local paths and session metadata.
+runs/*
+!runs/.gitkeep
+
+# Local editorial history; the current report is docs/report.md.
+REPORT_DIFFS_PROPOSED.md

@@ -1,0 +1,56 @@
+id: t5_cost_aware_routing
+seed: 20260802
+answer_type: executable_routing_policy
+
+prompt: |
+  Design the minimum-cost MCP routing policy for the fixed production batch in
+  this workspace. Follow `ROUTING_CONTRACT.md` exactly.
+
+  Produce:
+
+  - `policy.json`: one ordered primary/fallback route for every route class;
+  - `metrics.json`: the exact metrics for that policy;
+  - `router.py`: an importable router implementing the required `route` function.
+
+  `evaluate.py` is the normative policy evaluator and may be executed or
+  imported, but do not modify it or any input file. Do not use the network.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: r1
+    category: GLOBAL_COST
+    statement: >
+      Plugin setup is paid once per scenario when the plugin is first attempted
+      anywhere in the batch, so independently optimizing each route class is not
+      globally optimal.
+    hint: >
+      Evaluate complete cross-class policies: setup costs are shared across the
+      whole fixed batch rather than charged independently to every route class.
+    delta_if_missed: "feasible but non-optimal policy assembled from local choices"
+
+  - id: r2
+    category: CONDITIONAL_COST
+    statement: >
+      A fallback incurs call, latency, and possibly setup cost only in scenarios
+      where its primary was attempted and failed.
+    hint: >
+      Compute fallback cost and latency conditionally per scenario; never add all
+      fallback costs unconditionally.
+    delta_if_missed: "wrong expected cost or wrong cost-minimizing policy"
+
+  - id: r3
+    category: CORRELATED_FAILURE
+    statement: >
+      Different plugins can share one failure domain, so a same-domain fallback
+      does not improve availability when that domain is down.
+    hint: >
+      Use scenario-level failure-domain availability; plugin names do not imply
+      independent failures.
+    delta_if_missed: "policy violates the success-rate constraint"
+
+verifier: verify.py
+verifier_inputs: ground_truth
+human_baseline_minutes: null

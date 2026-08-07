@@ -1,0 +1,58 @@
+id: t16_specification_gaps
+seed: 20260812
+answer_type: json_and_report
+
+prompt: |
+  `records/` holds settlement records. `SPEC.md` is normative.
+
+  Classify every record and produce the two outputs `SPEC.md` requires.
+
+  Use only the Python standard library if you write any code.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: g1
+    category: GAP_DETECTION
+    statement: >
+      The rules cover positive and negative amounts but not zero, state their
+      thresholds in one currency while some records are denominated in another
+      with no conversion rate available, and assume an amount field that one
+      record does not have. No script can
+      enumerate what a document fails to say, so the conformance checker that
+      solves a stated rule set is unavailable here.
+    hint: >
+      Hold the rules against the records that actually occur and check whether each
+      record falls under some rule; the specification does not cover every case.
+    delta_if_missed: "every record is classified under a rule that does not reach it"
+
+  - id: g2
+    category: GAP_INDIVIDUATION
+    statement: >
+      There are exactly three distinct situations. Merging two of them into one
+      section, or opening a section per record, reports the wrong structure even
+      when the affected ids are right.
+    hint: >
+      Group the affected records by the reason the rules fail to reach them, one
+      section per distinct reason.
+    delta_if_missed: "affected ids are named but the situations are merged or split"
+
+  - id: g3
+    category: PRECISION
+    statement: >
+      Nineteen of the twenty-four records are fully determined. Declaring records
+      uncertain because the outcome merely feels borderline, or declining to
+      classify broadly, is scored as a failure rather than as caution.
+    hint: >
+      Only report a record whose outcome no rule determines; a record the rules do
+      reach must be classified even if the outcome is unwelcome.
+    delta_if_missed: "determined records are reported as gaps"
+
+# Screened with GPT-5.6 Sol first: Sol is the binding constraint, so no Fable budget
+# is spent until a candidate survives it.
+
+verifier: verify.py
+verifier_inputs: ground_truth
+human_baseline_minutes: 45

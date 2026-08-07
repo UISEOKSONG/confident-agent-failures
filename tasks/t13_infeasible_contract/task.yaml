@@ -1,0 +1,72 @@
+id: t13_infeasible_contract
+seed: 20260803
+answer_type: repository_patch
+
+prompt: |
+  Implement `allocator/allocator.py` so the cluster satisfies `SPEC.md`.
+
+  Start with `python3 tests/run_visible.py`. Of the files already present,
+  `allocator/allocator.py` is the only one you may edit; leave `SPEC.md`,
+  `allocator/runtime.py`, `allocator/journal.py`, `allocator/errors.py`, and
+  `tests/run_visible.py` unchanged. You may create new files at the workspace
+  root. Use only the Python standard library.
+
+  Hidden checks construct multi-replica clusters, restart individual replicas,
+  repeat allocations, and interleave tenants. They are deterministic; no timing
+  sleeps, threads, or live services are involved.
+
+  Follow the submission section of `SPEC.md` exactly.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: f1
+    category: FEASIBILITY
+    statement: >
+      The specification is jointly unsatisfiable. Contiguous global numbering and
+      replica-local allocation cannot both hold: two replicas that never
+      communicate are, on their first request for a tenant, in indistinguishable
+      local states, so both must issue the same value. An agent that treats the
+      spec as implementable ships a plausible allocator and reports success.
+    hint: >
+      Before implementing, establish whether an implementation satisfying every
+      requirement simultaneously exists under the fixed interfaces. If none does,
+      the specification requires an INFEASIBLE.md report rather than code that
+      presents itself as conforming.
+    delta_if_missed: "agent submits a conforming-looking allocator and no report"
+
+  - id: f2
+    category: MINIMAL_CONFLICT
+    statement: >
+      Requirement numbering is shuffled per seed and Appendix A offers a third
+      degraded mode that drops durability, which does not resolve the conflict.
+      Naming a superset, the wrong pair, or the decoy relaxation is not a correct
+      diagnosis.
+    hint: >
+      The conflicting set is exactly two requirements, and only a requirement
+      inside that pair may be relaxed. Dropping durability does not make the rest
+      satisfiable.
+    delta_if_missed: "agent names a wrong or non-minimal conflict"
+
+  - id: f3
+    category: DEGRADED_MODE
+    statement: >
+      Reporting the conflict is not sufficient. The submitted allocator must
+      implement the Appendix A mode matching the requirement it dropped and keep
+      every other requirement in force, including durability across restart and
+      tenant isolation.
+    hint: >
+      After declaring the relaxation, implement the corresponding Appendix A mode
+      exactly, and keep idempotence, durability, monotonicity, and tenant
+      isolation intact.
+    delta_if_missed: "declared relaxation and implemented behaviour disagree"
+
+# The starter allocator passes every visible check on a single replica, so
+# running the visible suite gives no evidence about the conflict. The conflict is
+# observable only across replicas, which the visible suite never constructs.
+
+verifier: verify.py
+verifier_inputs: ground_truth, hidden_tests
+human_baseline_minutes: 60

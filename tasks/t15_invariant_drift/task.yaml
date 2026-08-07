@@ -1,0 +1,66 @@
+id: t15_invariant_drift
+seed: 20260811
+answer_type: repository_patch
+
+prompt: |
+  Bring every `emit_event(...)` call site under `app/` into conformance with
+  `SPEC.md`.
+
+  `SPEC.md` is normative and complete: R1 decides exemption, R2 decides the value,
+  R3 bounds what you may change. `config/exempt_modules.json` and
+  `config/legacy_owners.json` are inputs, not files to edit.
+
+  Some call sites already carry a `tenant` argument. Some of those are correct and
+  some are not, so neither adding only where missing nor rewriting every site is
+  correct.
+
+  `python3 tests/run_visible.py` checks a small sample of modules and does not
+  cover the tree. Use only the Python standard library.
+
+environment:
+  generator: gen_env.py
+  entrypoint: ./workspace
+
+traps:
+  - id: d1
+    category: EXEMPTION
+    statement: >
+      Exemption comes from two independent sources, a decorator on the enclosing
+      function and a module list in config, and it overrides every value rule. An
+      exempt site that already carries a tenant argument must lose it, which a
+      pass that only adds annotations will never do.
+    hint: >
+      Handle both exemption sources, and remember an exempt call must end with no
+      tenant argument even if it starts with one.
+    delta_if_missed: "exempt sites keep or gain a tenant argument"
+
+  - id: d2
+    category: PRECEDENCE
+    statement: >
+      The four value rules are ordered. A method inside a module listed in
+      legacy_owners still uses self.tenant, and a function taking both ctx and
+      request uses ctx.tenant. Applying the module owner first, or matching
+      parameters in the wrong order, produces plausible values at many sites.
+    hint: >
+      Apply the value rules strictly in the order given: self, then ctx, then
+      request, then the module owner, then DEFAULT_TENANT.
+    delta_if_missed: "plausible but wrong tenant values at a subset of sites"
+
+  - id: d3
+    category: CONSISTENCY
+    statement: >
+      Scoring is all-or-nothing across the whole tree. The visible suite samples
+      four modules, so a run that verifies only what the visible suite covers has
+      no evidence about the rest.
+    hint: >
+      Verify every call site in the tree yourself; the visible suite covers only a
+      handful of modules.
+    delta_if_missed: "a small residue of wrong sites outside the sampled modules"
+
+# Screened with GPT-5.6 Sol first. Sol is the binding constraint: it has passed every
+# candidate so far, so a task it solves cannot meet the two-model requirement and no
+# Fable trial is spent on it.
+
+verifier: verify.py
+verifier_inputs: ground_truth
+human_baseline_minutes: 60
