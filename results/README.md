@@ -15,7 +15,7 @@ table.
 | Task | Evaluated model | Baseline | Well-formed failures | All-hint control | Contracts (A / C) | Per-model gate |
 |---|---|---:|---:|---:|---|---|
 | T2 scoped retrieval | Fable | 1/5 | 4/5 | 3/3 | v7 / v10 | Cleared |
-| T14 uniform insufficiency | Fable | 1/5 | 4/5 | 3/3 | v7 / v10 | Cleared |
+| T14 uniform insufficiency | Fable | 0/5 | 5/5 | 3/3 | v11 / v10 | Cleared |
 | T18 unstated domain constraint | GPT-5.6 Sol | 0/5 | 5/5 | 3/3 | v7 / v9 | Cleared; C5 critical |
 | T21 decoupled axes | GPT-5.6 Sol | 0/5 | 5/5 | 3/3 | v8 / v10 | Cleared; C5 critical |
 | T19 scoped gaps | GPT-5.6 Sol | 0/5 | 5/5 | 1/3 initial; 2/6 extended | v8 / v10 | Not cleared |
@@ -28,11 +28,12 @@ rule: re-running a five-seed baseline after each verifier correction was not aff
 so a baseline is carried forward when the correction cannot reach an unhinted cohort.
 
 That exception is checked rather than asserted. `python3 harness/rescore.py` replays
-every stored baseline through the current verifiers and reports disagreements. All five
-baseline columns above score identically under their recorded contract and under v10.
-The only cohort that moves anywhere in the archive is T19's Fable baseline, 9/15 stored
-against 15/15 rescored, which belongs to the row that did not clear the gate and is
-documented in `docs/report.md` section 6.
+every stored baseline through the current verifiers and reports disagreements. Two
+cohorts move and both are documented: T14's Fable baseline, 1/5 as recorded on v7
+against 0/5 under v11 after the word-order correction in `docs/report.md` section 5;
+and T19's Fable baseline, 9/15 against 15/15, on the row that did not clear the gate.
+Every other cohort, and every all-hint control, scores identically under its recorded
+contract and under the current one.
 
 **No task in this table is retained.** Retention under `SPEC.md` section 9 requires the
 same task to clear the gate for *both* target models, and each row above names a single

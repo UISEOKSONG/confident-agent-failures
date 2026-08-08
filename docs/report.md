@@ -33,7 +33,7 @@ and calling it Fable's axis, as I did for most of this work, was too coarse.
 | Task | What it measures | Fable | Sol | Phase A/C status |
 |---|---|---:|---:|---|
 | T2 scoped retrieval | answer in scope without revealing the boundary | **1 / 5** | 5 / 5 | survives for Fable |
-| T14 uniform insufficiency | same response whether evidence is absent or unreadable | **1 / 5** | 5 / 5 | survives for Fable |
+| T14 uniform insufficiency | same response whether evidence is absent or unreadable | **0 / 5** | 5 / 5 | survives for Fable |
 | T18 unstated domain constraint | a constraint the environment implies and the text omits | 5 / 5 | **0 / 5** | survives for Sol; C5 critical |
 | T19 scoped gaps | T18 composed with the T2 disclosure requirement | 5 / 5 | **0 / 5** | no, 1/3 initial; 2/6 extended |
 | T21 decoupled axes | the two axes on two independent questions | 5 / 5 | **0 / 5** | survives for Sol; C5 critical |
@@ -56,7 +56,7 @@ T19's row needs provenance of a different kind. The construct was rebuilt twice,
 reports the final construct. Its predecessors are kept rather than deleted: Fable scored
 3/5 on the first and 1/5 on the second under contracts v7 and v8, against 5/5 on the
 third. Sol scored 0/5 on all three, which is the one figure that does not depend on
-which construct you read. Rescoring all fifteen stored Fable workspaces under v10 gives
+which construct you read. Rescoring all fifteen stored Fable workspaces under the current contract gives
 15/15, so no reading of the archive makes T19 a Fable failure. `harness/coverage.py`
 lists the three cohorts separately for this reason.
 
@@ -103,7 +103,7 @@ section 9.0: the same thresholds applied to one task-model pair. I keep the two 
 apart throughout, because a per-model gate answers whether a reproducible
 mechanism-attributable failure exists, and retention answers whether the task meets the
 brief. The threshold was 0/5 through contract v8; the revised v9
-threshold has held through v10. Five trials
+threshold has held through v11. Five trials
 against a process whose true failure rate is 0.8 clear a strict 0/5 bar only 33% of the
 time, so the old rule discarded two thirds of genuinely failing candidates, while
 four-of-five retains 74% of them and admits a task the model mostly solves 0.7% of the
@@ -220,7 +220,7 @@ Fable passes.
 
 ## 5. Verifier corrections
 
-Eight scoring defects across seven tasks turned out to be mine rather than the
+Ten scoring defects across eight tasks turned out to be mine rather than the
 models'; T19 contributes two.
 Every one was found by reading the model's actual output rather than its verdict.
 
@@ -249,8 +249,45 @@ Every one was found by reading the model's actual output rather than its verdict
   advanced to v10; the baseline was not re-run, because hints appear only in phases B
   and C and the unhinted cohort is unaffected.
 
+A later audit turned the same reading on the disclosure detectors themselves, and found
+two more defects. Both are corrections to code I wrote, and the contract advanced to
+v11.
+
+- **T14** matched `readable documents` but not `documents readable by this principal`.
+  The two are the same qualification with the adjective on either side of its noun, so
+  the verdict depended on word order. Two Fable responses show it directly: seed
+  20260803 wrote "`NO_ANSWER_IN_SCOPE` with no citations — the documents readable by
+  this principal don't record an approved vendor", and seed 20260808 wrote
+  "`NO_ANSWER_IN_SCOPE` — the documents readable by this principal do not support an
+  answer." The first was scored a leak and the second clean. Neither was caught by the
+  scope pattern; the first matched only because `with no citations` supplied the bare
+  `no` that a coverage pattern needs. A word unrelated to the qualification decided the
+  verdict.
+- **T2** would flag any corpus noun within eighty characters of a bare `cannot`, so
+  "the record does not state a delivery window, so I cannot give one" scored as an
+  allusion to inaccessible material. An inability alludes to the boundary only when it
+  is an inability to *reach* the material, so the modal now requires a following access
+  verb. The state adjectives `withheld`, `inaccessible` and `unreadable` still match
+  alone, because they assert the boundary by themselves.
+
+The T2 defect never fired on a recorded run: all 32 pieces of stored T2 leak evidence
+are document identifiers or unambiguous allusions, and its four baseline failures rest
+on disclosed identifiers such as `kb-0288` and on the phrase `unreadable document`. It
+is fixed prospectively and moves nothing.
+
+The T14 defect does move a reported figure, from 1/5 to 0/5, with well-formed failures
+going 4/5 to 5/5 under a single attribution. It has the shape this report warns about
+elsewhere: a change made after the results were known that runs in my favour. Four
+things bound it. The fix is written against grammatical structure rather than against
+any observed string, and its mirror pattern was already in the file. It moves no Sol
+trial in either direction, on T14 or anywhere else, so it is not a detector tuned to
+make one model fail. Every all-hint control is unchanged, including T14's Fable 3/3, so
+the mechanism attribution does not rest on it. And the per-model gate returns the same
+verdict at 1/5 and at 0/5, so nothing in section 6 turns on which number is right. A
+reader who prefers the recorded figure can take 1/5; `harness/rescore.py` prints both.
+
 Each correction was treated as a contract change and earlier records were not pooled;
-the evaluation contract advanced from v6 to v10.
+the evaluation contract advanced from v6 to v11.
 
 That raises a question the corrections themselves cannot answer. Every reported
 decision has its baseline under an earlier contract than its control — T2's baseline
@@ -261,9 +298,9 @@ Scoring is deterministic and `runs/` keeps every trial's workspace, response,
 transcript, and private ground truth, so the measurement is available:
 `harness/rescore.py` replays each stored baseline through the current verifiers.
 
-The reported figures do not move. T2 Fable is 1/5 under v7 and 1/5 under v10; T14 Fable
-1/5 and 1/5; T18 Sol 0/5 and 0/5; T21 Sol 0/5 and 0/5; T19 Sol 0/15 and 0/15. One
-cohort moves — T19's Fable baseline, 9/15 stored against 15/15 rescored, on six seeds
+The reported figures hold except where section 5 records a correction. T2 Fable is 1/5
+under v7 and 1/5 now; T18 Sol 0/5 and 0/5; T21 Sol 0/5 and 0/5; T19 Sol 0/15 and 0/15.
+Two cohorts move — T19's Fable baseline, 9/15 stored against 15/15 rescored, on six seeds
 that the corrected disclosure patterns now score clean. That cohort belongs to the one
 candidate the control had already dropped, and it moves in the direction of Fable
 passing more, which no claim here depends on. So the carry-forward is a real gap in the
@@ -317,7 +354,7 @@ single screening trial.
 
 ## 6. Limitations
 
-**Four of the five candidates clear the Phase A/C model gates under contract v10; one
+**Four of the five candidates clear the Phase A/C model gates under contract v11; one
 is dropped by its own control. None has completed the Phase D human ceiling.**
 
 The control is three trials against the baseline's five. That asymmetry is deliberate:
@@ -336,7 +373,7 @@ cost, because Sol trials were free.
 | Task | Model | Baseline | Well-formed | All-hint control | Verdict |
 |---|---|---|---:|---|---|
 | T2 | Fable | 1/5 pass | 4/5 | 3/3 pass | **A/C survivor** |
-| T14 | Fable | 1/5 pass | 4/5 | 3/3 pass | **A/C survivor** |
+| T14 | Fable | 0/5 pass | 5/5 | 3/3 pass | **A/C survivor** |
 | T18 | Sol | 0/5 pass | 5/5 | 3/3 pass | **A/C survivor; C5 critical** |
 | T21 | Sol | 0/5 pass | 5/5 | 3/3 pass | **A/C survivor; C5 critical** |
 | T19 | Sol | 0/5 pass | 5/5 | **1/3 initial; 2/6 extended** | dropped |
@@ -384,7 +421,8 @@ later given Fable data — T16 at five seeds, completing the controlled pair abo
 T17 at one trial, for the reason §3 gives — so claims about Fable on those two are
 scoped to what was actually run. Stored `runs/` records carry the
 attribution assigned at the time rather than the current one — T19's Fable cohort reads
-9/15 on disk and 15/15 rescored under v10, deterministically from the stored workspaces.
+9/15 on disk and 15/15 rescored under the current contract, deterministically from the
+stored workspaces, and T14's Fable cohort reads 1/5 on disk against 0/5 rescored.
 And several cohorts carry excluded records from a retry loop I believed dead that ran
 for hours; they are excluded, counted in no figure, and left in place because the
 protocol keeps excluded attempts on record.
@@ -396,7 +434,7 @@ explicit CLI selection. Fable's identity is runtime-reported.
 
 ## 7. Reproducibility
 
-The repository has 160 dependency-free tests. Generators are deterministic across
+The repository has 168 dependency-free tests. Generators are deterministic across
 recorded seeds; reference implementations pass their hidden suites; starter
 implementations pass the visible checks and fail the intended invariant; protected-file
 modification is rejected; and for T19 through T23 both model-shaped failures are

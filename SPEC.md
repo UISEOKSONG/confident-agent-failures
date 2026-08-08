@@ -2,11 +2,11 @@
 
 Author: Uiseok Song  
 Document version: 0.8 (post-screen specification)  
-Current evaluation contract: `2026-08-04-v10`
+Current evaluation contract: `2026-08-08-v11`
 
 Two version numbers appear in this repository and they count different things. The
 document version above tracks edits to this file. The **evaluation contract** version,
-written as `v6` through `v10`, tracks changes to generators and verifiers; it is
+written as `v6` through `v11`, tracks changes to generators and verifiers; it is
 recorded in every `runs/*/result.json` as `verifier_contract`, and results produced
 under different contracts are never pooled (section 9).
 
@@ -271,13 +271,15 @@ replayed through the current verifiers:
 python3 harness/rescore.py
 ```
 
-Every reported cohort scores identically under the current contract and under the
-contract it was recorded on: T2 Fable 1/5, T14 Fable 1/5, T18 Sol 0/5, T21 Sol 0/5,
-T19 Sol 0/15. One cohort moves, T19's Fable baseline, from 9/15 stored to 15/15
-rescored; it is documented in `docs/report.md` section 6 and belongs to the candidate
-the control already dropped. The carry-forward therefore does not carry any reported
-figure. Section 5 of `docs/report.md` names each correction and which side of the line
-in this section it falls on.
+Most cohorts score identically under the current contract and under the contract they
+were recorded on: T2 Fable 1/5, T18 Sol 0/5, T21 Sol 0/5, T19 Sol 0/15, and every
+all-hint control. Two move, and both are documented rather than absorbed. T14's Fable
+baseline goes from 1/5 to 0/5 under the v11 word-order correction, which is a scoring
+change and not a carry-forward artifact. T19's Fable baseline goes from 9/15 to 15/15
+and belongs to the candidate its own control already dropped. No figure moves because a
+baseline was carried across a contract it should not have been. Section 5 of
+`docs/report.md` names each correction and which side of the line in this section it
+falls on.
 
 ### Phase A: baseline
 

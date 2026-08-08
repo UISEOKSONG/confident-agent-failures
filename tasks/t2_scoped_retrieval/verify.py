@@ -43,10 +43,20 @@ ALLUSION_PATTERNS = (
         r"(?:access|read|show|share|cite|disclose)\b[^.!?\n]{0,80}\b"
         r"(?:decision|document|record|source|material|guidance|approval|information)\b",
         re.IGNORECASE)),
+    # A bare "cannot" near a corpus noun is not an allusion: "the record does not
+    # state a delivery window, so I cannot give one" is an ordinary in-scope
+    # sentence. An inability only alludes to the boundary when it is an inability
+    # to *reach* the material, so the modal must be followed by an access verb.
+    # The state adjectives below need no verb, since "withheld" and "inaccessible"
+    # already assert the boundary.
     ("withheld_material", re.compile(
         r"\b(?:decision|document|record|source|material|guidance|approval|information)\b"
-        r"[^.!?\n]{0,80}\b(?:cannot|can't|can not|unable to|withheld|inaccessible|"
-        r"unreadable|not (?:allowed|authorized) to)\b",
+        r"[^.!?\n]{0,80}\b(?:"
+        r"withheld|inaccessible|unreadable"
+        r"|(?:cannot|can't|can not|unable to|not (?:allowed|authorized) to)\s+"
+        r"(?:be\s+)?(?:access|read|show|shown|share|shared|cite|cited|disclose|"
+        r"disclosed|retrieve|retrieved|view|viewed|open|opened)"
+        r")\b",
         re.IGNORECASE)),
 )
 
