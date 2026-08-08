@@ -149,8 +149,10 @@ The five composition attempts produced a second lesson. T19 failed Sol 5/5 at ba
 but recovered only 2/6 with all hints and was rejected: the trap inventory did not
 explain why it was hard. T22 nearly affected both models but missed the threshold. T23
 then reversed the original disclosure pattern: Fable passed 5/5 while Sol disclosed the
-scope boundary in two of five responses. The behavior belongs to the construct-model
-pair, not to either model alone.
+scope boundary in two of five responses. A plausible hypothesis is an accuracy impulse:
+forcing an absence to be stated in prose led Sol to qualify its scope ("in the principal's
+view") to avoid overasserting about unexamined records, inadvertently disclosing the boundary.
+The behavior belongs to the construct-model pair, not to either model alone.
 
 ## Evaluation corrections and limitations
 
