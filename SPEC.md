@@ -311,8 +311,8 @@ per-model gate status and say so explicitly wherever the distinction could be mi
 ### 9.1 Retention threshold (v9)
 
 Through v8 a candidate was retained only at 0/5 for both models. That bar is
-underpowered. Fable's observed per-instance failure rate on T2 and T14 is 4/5, and
-the same seed produced both a failure and a pass on T14, so the underlying process
+underpowered. Fable's observed per-instance failure rate is 4/5 on T2, and one seed
+there produced a failure and a pass in different conditions, so the underlying process
 is stochastic rather than deterministic. If the true failure rate is p, a strict
 0/5 rule retains a genuinely failing task with probability p^5:
 
@@ -330,13 +330,19 @@ From v9, Phase A retains a candidate at **no more than one pass in five valid
 trials** per model, with the existing requirement of at least three well-formed
 semantic failures and the Phase C control unchanged.
 
-The threshold was changed after Fable's 1/5 results were known, which is worth
+The threshold was changed after Fable's 1/5 result on T2 was known, which is worth
 stating plainly. Two things bound the risk. The justification above is a power
 calculation that does not reference the observed counts, and the change alters no
 existing verdict: T2, T14, T18, T19 and T21 are all still not retained under either
 threshold, because in each case one model qualifies and the other does not. The
 change is prospective, and it matters only if a future task produces four-of-five
 failures from both models.
+
+T14 originally supplied a second example here, at 4/5 with one seed passing. The v11
+correction in `docs/report.md` section 5 moved that cohort to 5/5, so T14 no longer
+shows the pass this section cited and no longer depends on the relaxed threshold; it
+would be retained under the strict 0/5 rule too. T2 is now the only candidate the
+change is load-bearing for, which narrows the argument without altering it.
 
 ### Phase B: leave-one-defect-out
 

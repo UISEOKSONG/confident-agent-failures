@@ -214,9 +214,9 @@ same field where a token left it clean. Under the constructs measured here the
 disclosure failure belongs to the construct-model pair rather than to either alone, and
 describing it as Fable's axis, as I did for most of this work, was too coarse.
 
-What is unaffected is what was measured directly: Fable fails T2 and T14 at 4/5 where
-Sol passes 5/5, and Sol fails T18, T19 and T21 on the unstated-constraint axis where
-Fable passes.
+What is unaffected is what was measured directly: Fable fails T2 at 4/5 and T14 at 5/5
+where Sol passes 5/5, and Sol fails T18, T19 and T21 on the unstated-constraint axis
+where Fable passes.
 
 ## 5. Verifier corrections
 
