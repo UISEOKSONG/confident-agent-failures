@@ -46,10 +46,17 @@ candidates against a per-model criterion, not completed benchmark tasks.
 ## Motivation and method
 
 I own the tool layer of an internal multi-agent platform with roughly 2,500 agents
-serving 2,200 employees. A recurring production problem is an agent that retrieves only
-part of the relevant context, reasons coherently over that subset, and returns a
-confident wrong answer. End-to-end scoring often cannot distinguish this from a
-reasoning error or a malformed response.
+serving 2,200 employees. The recurring production problem is a constraint the agent
+either does not notice or cannot talk about, and end-to-end scoring is blind to it in
+two opposite ways.
+
+An environmental constraint produces the familiar case: the agent reasons coherently
+over the partial picture it has and returns a confident wrong answer, which scoring
+cannot distinguish from a reasoning error or a malformed response. A permission
+boundary produces the harder case: the agent respects the boundary, the answer is
+correct, accuracy awards full marks — and the explanation still discloses that the
+boundary exists. Nothing that scores only the final answer can catch that. In all four
+T2 failures below, the submitted answer and its citations were correct.
 
 Each task therefore separates artifact correctness, reasoning evidence, and the final
 message. A seeded generator constructs the environment, a standard-library solver

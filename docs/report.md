@@ -67,10 +67,23 @@ were screened at one seed and stopped; those are design results, not measurement
 
 I own the tool layer of an internal multi-agent platform, roughly 2,500 agents serving
 2,200 employees, and I debug user-reported failures by reading production traces. The
-failure I cannot currently measure is an agent that retrieves part of the relevant
-context, reasons correctly over that part, and returns a confident wrong answer. End-to-
-end accuracy does not catch it, and an LLM judge scoring the final answer does not
-either, because the answer looks right.
+failures I cannot currently measure come from constraints — a permission boundary, or
+something the environment implies that the specification never states — and end-to-end
+scoring is blind to them in two opposite ways.
+
+When the constraint is environmental, the agent never notices it. It reasons correctly
+over the partial picture the constraint leaves it and returns a confident wrong answer.
+Accuracy catches that the answer is wrong but not why, and an LLM judge scoring the
+final answer does not catch it at all, because the reasoning is coherent and the answer
+looks right.
+
+When the constraint is a permission boundary, the agent respects it and the answer is
+correct. Accuracy therefore awards full marks. The failure is that the explanation
+discloses the boundary's existence, and that disclosure is the violation. No metric
+that scores only the final answer can see this one, by construction — which is the
+sharper motivation of the two, and the reason this repository separates the artifact
+from the message rather than only measuring correctness. T2 makes it concrete: in all
+four Fable failures the submitted answer and its citations were correct.
 
 So every task here scores the artifact and the reasoning separately from the final
 message, uses a deterministic verifier rather than a judge, and attributes each failure
