@@ -6,5 +6,5 @@ __pycache__/
 runs/*
 !runs/.gitkeep
 
-# Local editorial history; the current report is docs/report.md.
+# Local editorial history. The report lives at docs/report.md and nowhere else.
 REPORT_DIFFS_PROPOSED.md

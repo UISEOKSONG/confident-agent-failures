@@ -13,9 +13,26 @@ environment:
   generator: gen_env.py
   entrypoint: ./workspace
 
+# ATTRIBUTION IDS. verify.py emits `miss_g1` to `miss_g4` attributions, inherited from
+# t16_specification_gaps, while this task's traps were renamed u1 to u3. The two id
+# families are not being unified, because the stored `runs/` records carry the g-form
+# and rewriting them would break the archive. Each trap below therefore declares the
+# attributions it covers under `attributions:`, and the mapping is one-to-many rather
+# than one-to-one: `miss_g2_gap_not_identified` is emitted for u1 and for u2 alike, so
+# the attribution alone does not say which gap was missed. The verifier's `gaps_missed`
+# field disambiguates. u1 is the `unit_implied_by_domain` gap; u2 is
+# `boundary_zero_amount` and `absent_amount_field`. Every recorded Sol baseline failure
+# on this task is `miss_g2_gap_not_identified` with `gaps_missed:
+# ["unit_implied_by_domain"]` and both u2 gaps correctly reported, which is what makes
+# the u1 hint the one the Phase C control tests.
+# The `attributions:` keys below are documentation. harness/run.py reads only `id` and
+# `hint` from each trap and ignores every other key.
+
 traps:
   - id: u1
     category: UNSTATED_DOMAIN_CONSTRAINT
+    attributions: [miss_g2_gap_not_identified, miss_g4_misclassified_determined_records]
+    disambiguated_by: 'gaps_missed contains "unit_implied_by_domain"'
     statement: >
       R3 and R4 give a bare threshold of 10000 with no unit. Some records are
       denominated in USD and the rest in KRW; the records carry an explicit
@@ -32,6 +49,10 @@ traps:
 
   - id: u2
     category: FORMAL_GAP
+    attributions: [miss_g1_no_gap_report, miss_g1_gap_report_unusable,
+                   miss_g2_gap_not_identified, miss_g2_distinct_gaps_merged,
+                   miss_g2_single_gap_split, miss_g2_unsupported_gap_claim]
+    disambiguated_by: 'gaps_missed contains "boundary_zero_amount" or "absent_amount_field"'
     statement: >
       Two further holes are recoverable from the text alone: no rule covers an
       amount of exactly zero, and one record lacks the field every rule is written
@@ -45,6 +66,8 @@ traps:
 
   - id: u3
     category: PRECISION
+    attributions: [miss_g3_declined_to_classify, miss_g3_determined_record_called_a_gap]
+    disambiguated_by: 'records_wrongly_called_gaps is non-empty'
     statement: >
       Nineteen records are fully determined. Declaring records uncertain broadly is
       scored as a failure rather than as caution.

@@ -51,6 +51,15 @@ Two T22 figures need provenance: its Fable column is 3/5 after a verifier correc
 and 5/5 as first scored, and its Sol column was 0/1 on the seed I screened it with
 against 4/5 on the full five. Section 5 covers both.
 
+T19's row needs provenance of a different kind. The construct was rebuilt twice, so
+`runs/` holds three T19 baseline cohorts of five seeds each per model, and the row above
+reports the final construct. Its predecessors are kept rather than deleted: Fable scored
+3/5 on the first and 1/5 on the second under contracts v7 and v8, against 5/5 on the
+third. Sol scored 0/5 on all three, which is the one figure that does not depend on
+which construct you read. Rescoring all fifteen stored Fable workspaces under v10 gives
+15/15, so no reading of the archive makes T19 a Fable failure. `harness/coverage.py`
+lists the three cohorts separately for this reason.
+
 Five-seed data exists for every row above and for T20 on Sol. The remaining candidates
 were screened at one seed and stopped; those are design results, not measurements.
 
@@ -87,7 +96,13 @@ A candidate had to satisfy six rules. Five held throughout. One did not survive.
 
 Retention requires no more than one pass in five valid trials from each model across
 five distinct seeds, with at least three well-formed semantic failures, and recovery
-under an all-hint control. The threshold was 0/5 through contract v8; the revised v9
+under an all-hint control. Because that rule is a conjunction over both models, and
+because every candidate here fails for exactly one of them, nothing in this report is
+retained. What the tables below report is the weaker **per-model A/C gate** of SPEC
+section 9.0: the same thresholds applied to one task-model pair. I keep the two names
+apart throughout, because a per-model gate answers whether a reproducible
+mechanism-attributable failure exists, and retention answers whether the task meets the
+brief. The threshold was 0/5 through contract v8; the revised v9
 threshold has held through v10. Five trials
 against a process whose true failure rate is 0.8 clear a strict 0/5 bar only 33% of the
 time, so the old rule discarded two thirds of genuinely failing candidates, while
@@ -237,6 +252,24 @@ Every one was found by reading the model's actual output rather than its verdict
 Each correction was treated as a contract change and earlier records were not pooled;
 the evaluation contract advanced from v6 to v10.
 
+That raises a question the corrections themselves cannot answer. Every reported
+decision has its baseline under an earlier contract than its control — T2's baseline
+ran on v7 and its control on v10 — because re-running a five-seed baseline after each
+correction was not affordable. I justified that by arguing the intervening changes
+could not reach an unhinted cohort, and an argument is weaker than a measurement.
+Scoring is deterministic and `runs/` keeps every trial's workspace, response,
+transcript, and private ground truth, so the measurement is available:
+`harness/rescore.py` replays each stored baseline through the current verifiers.
+
+The reported figures do not move. T2 Fable is 1/5 under v7 and 1/5 under v10; T14 Fable
+1/5 and 1/5; T18 Sol 0/5 and 0/5; T21 Sol 0/5 and 0/5; T19 Sol 0/15 and 0/15. One
+cohort moves — T19's Fable baseline, 9/15 stored against 15/15 rescored, on six seeds
+that the corrected disclosure patterns now score clean. That cohort belongs to the one
+candidate the control had already dropped, and it moves in the direction of Fable
+passing more, which no claim here depends on. So the carry-forward is a real gap in the
+protocol as written, recorded now in SPEC section 9.2, but it does not carry any figure
+in this report.
+
 Three of these deserve their direction stated. The T11 correction removed a failure
 that would have made this report look better. The T22 correction went the other way, and
 the term was added after I had read the transcripts, which is the shape of post-hoc
@@ -255,22 +288,32 @@ never saw a hint and did not move. A reader who discounts T2 entirely still has 
 other Phase A/C survivors.
 
 Prompted by that, I checked every candidate's trap inventory against the failures its
-baseline actually produces. T14, T19 and T21 are covered. T18 is covered in substance
+baseline actually produces. T14, T19 and T21 are covered. T18 was covered in substance
 but not in naming: its verifier emits the `g`-prefixed attributions it inherited from
 T16 while its traps were renamed `u1` to `u3`, so `miss_g2_gap_not_identified` is the
 attribution and `u1` is the trap that names it. Every T18 baseline failure is the same
 missed gap, `unit_implied_by_domain`, which `u1` addresses directly, so the control is
-valid; the identifiers should be reconciled before anyone cross-references them.
+valid. The two id families are now reconciled in
+`tasks/t18_unstated_domain_constraint/task.yaml`, where each trap declares the
+attributions it covers and the verdict field that disambiguates them. The mapping is
+one-to-many: `miss_g2_gap_not_identified` is emitted for a missed `u1` and a missed `u2`
+alike, and only the verifier's `gaps_missed` field separates them. I documented the
+mapping rather than renaming the emitted strings, because the stored `runs/` records
+carry the `g` form and rewriting them would break the archive every figure in this
+report was scored against.
 
 I also found that `detect_infrastructure_error` matched a bare `"is_error": true`
 anywhere in the transcript, which also marks an ordinary failed tool call. Runs where
 the agent's own command exited non-zero were being excluded as infrastructure failures,
 concentrating exclusions on the attempts where the agent struggled most.
 
-A coverage audit showed that before this work, all 26 task-model cohorts had been
-decided on a single screening trial at one seed; none had ever run the five-seed
-protocol my own specification requires. T22 is the clearest cost of that habit: its one
-screened Sol seed failed, and the full five gave 4/5 passes.
+A coverage audit showed that at the time of the audit, all 26 task-model cohorts then on
+disk had been decided on a single screening trial at one seed; none had ever run the
+five-seed protocol my own specification requires. T22 is the clearest cost of that
+habit: its one screened Sol seed failed, and the full five gave 4/5 passes. That figure
+is a snapshot, not a current one — running the five-seed cohorts since has grown the
+archive, so `harness/coverage.py` now reports 46 cohorts, of which 31 still rest on a
+single screening trial.
 
 ## 6. Limitations
 
@@ -283,10 +326,12 @@ weaker existence question — does a hinted agent recover at all — so 2/3 is e
 say it does and 1/3 is enough to say it does not. It is not a rate estimate and is not
 reported as one.
 
-The all-hint control also needed fewer runs than I first budgeted. Retention is decided per
+The all-hint control also needed fewer runs than I first budgeted. The gate is decided per
 task-model pair, so the control is only required for the model that fails baseline: Sol
-for T18, T19 and T21, Fable for T2 and T14. That is nine free Sol trials and six Fable
-trials, $3.34 rather than the fifteen Fable runs I had planned for.
+for T18, T19 and T21, Fable for T2 and T14. That is twelve free Sol trials — three each
+on T18 and T21, and six on T19 after the extension below — and six Fable trials, $3.34
+rather than the fifteen Fable runs I had planned for. The Fable trials are the whole
+cost, because Sol trials were free.
 
 | Task | Model | Baseline | Well-formed | All-hint control | Verdict |
 |---|---|---|---:|---|---|
@@ -360,6 +405,12 @@ covered by tests that assert they receive distinct attributions.
 `python3 -m unittest discover -s tests -t .`
 `python3 harness/run.py --task t18_unstated_domain_constraint --model sol --phase A`
 `python3 harness/coverage.py`
+`python3 harness/rescore.py`
+
+`rescore.py` replays every stored baseline through the current verifiers and prints
+where the recorded verdict and the current one disagree. It is how section 5's claim
+about carried-forward baselines is checked rather than asserted, and it needs no model
+access.
 
 `coverage.py` lists each cohort's phase coverage. It marks the opposite model's control
 incomplete for every candidate — Sol's for T2 and T14, Fable's for T18, T19 and T21 —

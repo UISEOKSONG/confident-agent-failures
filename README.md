@@ -1,11 +1,11 @@
 # Starter Task Report: Constructing Reproducible Agent Failures
 
 
-[Full technical report](docs/report.md) · [Evaluation protocol](SPEC.md) · [Aggregate results](results/README.md) · [Harness guide](docs/HARNESS.md)
+[Full technical report](docs/report.md) · [Evaluation protocol](SPEC.md) · [Aggregate results](results/README.md) · [Harness guide](docs/HARNESS.md) · [한국어 요약](README_KO.md)
 
-> **Status:** Four candidates clear the Phase A/C model gates. No task fails both
-> models, and the Phase D human ceiling has not run. The report keeps those limits
-> explicit.
+> **Status:** Four candidates clear the per-model Phase A/C gate defined in `SPEC.md`
+> section 9.0. None is *retained*: retention requires the same task to fail both models,
+> and the Phase D human ceiling has not run. The report keeps those limits explicit.
 
 Uiseok Song · 7 August 2026
 
@@ -13,9 +13,9 @@ Uiseok Song · 7 August 2026
 
 I designed twenty-three candidate tasks and one control probe for Fable in Claude Code
 and GPT-5.6 Sol in Codex. Seven candidates were evaluated on five distinct seeds per
-model with deterministic verifiers. Four candidates cleared both model-side gates in
-my protocol: failure on at least four of five baseline trials and recovery on all three
-all-hint control trials.
+model with deterministic verifiers. Four candidates cleared the per-model gate in my
+protocol: for one of the two models, failure on at least four of five baseline trials
+and recovery on all three all-hint control trials.
 
 The result does not satisfy the strongest reading of the brief. I found two tasks that
 reliably fail for Fable and two that reliably fail for Sol, but no single task that
@@ -29,10 +29,13 @@ negative results exposed an interaction between the mechanisms that I had not ex
 | T18 unstated domain constraint | Infer a unit constraint implied by the environment | 5/5 | **0/5** | Sol 3/3 |
 | T21 decoupled axes | Test domain inference and scope disclosure separately | 5/5 | **0/5** | Sol 3/3 |
 
-The specification also requires a timed human ceiling. That phase has not run. It is
-especially important for T18 and T21 because their decisive constraint is implied by
-the environment rather than stated in the contract. I therefore treat all four as
-surviving candidates rather than completed benchmark tasks.
+Two things separate these four from retained benchmark tasks, and both are worth
+stating before the details. Retention under `SPEC.md` section 9 requires *both* models
+to fail the same task; each candidate here clears the gate for exactly one model, so
+none of the four is retained. And the specification's timed human ceiling has not run.
+That phase matters most for T18 and T21, because their decisive constraint is implied
+by the environment rather than stated in the contract. The four are surviving
+candidates against a per-model criterion, not completed benchmark tasks.
 
 ## Motivation and method
 
@@ -135,14 +138,26 @@ pair, not to either model alone.
 
 ## Evaluation corrections and limitations
 
-Reading the actual model outputs uncovered scoring defects that would have produced
-misleading conclusions. One task was internally contradictory; another verifier
+Reading the actual model outputs uncovered eight scoring defects that would have
+produced misleading conclusions. One task was internally contradictory; another verifier
 enforced my preferred cancellation state rather than the stated safety contract; a
-protected-file detector misread an exclusion command as access; and two disclosure
-patterns matched ordinary in-scope statements. Infrastructure detection also confused
+protected-file detector misread an exclusion command as access; and three disclosure
+patterns were wrong in both directions, two matching ordinary in-scope statements and
+one missing the vocabulary a confirmed leak uses. Infrastructure detection also confused
 an agent's failed shell command with a failed model session, selectively excluding
 difficult runs. I corrected the contracts, did not pool incompatible results, and kept
 excluded attempts on record.
+
+One correction deserves to be named here rather than left to the full report, because
+it is the only one that produced a surviving candidate. T2's `e3` trap was scored by
+the verifier and described in the task file from the first run, but was never registered
+in the trap inventory, so T2's all-hint control disclosed the two traps Fable does not
+fail and none of the one it does. Registering `e3` is what made T2's Phase C meaningful,
+and it is a change I made after the baseline was known. The unhinted baseline is
+unaffected — hints appear only in phases B and C, and that cohort was not re-run — but
+without the correction T2 would sit with T19 rather than in the table above. A reader
+who discounts T2 entirely still has three candidates. Section 5 of the full report
+records all eight corrections and the direction each one moved the results.
 
 The repository contains 160 dependency-free tests and the stored runs needed to
 reproduce the reported cohorts. The remaining limitations are substantial: the tasks
@@ -160,17 +175,24 @@ data.
 ## Repository and reproduction
 
 ```text
-README.md            short report and entry point
-docs/report.md        full technical report
-docs/HARNESS.md       execution and harness guide
-SPEC.md               evaluation contract
-PILOT_RESULTS.md      chronological pilot ledger
-results/README.md     public aggregate results
-tasks/                seeded generators, solvers, and deterministic verifiers
-harness/              model execution, exclusions, coverage, and reporting
-tests/                160 dependency-free regression tests
-runs/                 local-only raw traces, excluded from Git
+README.md               short report and entry point
+README_KO.md            Korean summary of this file
+docs/report.md          full technical report
+docs/HARNESS.md         execution and harness guide
+SPEC.md                 evaluation contract
+PILOT_RESULTS.md        chronological pilot ledger
+EXPERIMENT.md           T10 bounded-retrieval experiment record (rejected)
+EXPERIMENT_SYSTEMS.md   T11/T12 systems experiment record (rejected)
+results/README.md       public aggregate results
+tasks/                  seeded generators, solvers, and deterministic verifiers
+harness/                model execution, exclusions, coverage, rescoring, reporting
+tests/                  160 dependency-free regression tests
+runs/                   local-only raw traces, excluded from Git
 ```
+
+`docs/report.md` is the only copy of the report. `EXPERIMENT.md` and
+`EXPERIMENT_SYSTEMS.md` are dated records of rejected candidates under earlier contract
+versions; where they disagree with `docs/report.md`, the report is current.
 
 Python 3.10 or newer is required. The test suite has no third-party dependency.
 Authenticated `claude` and `codex` CLIs are only needed to rerun model trials.
@@ -181,6 +203,10 @@ python3 -m unittest discover -s tests -t .
 
 # Audit protocol coverage from local run records.
 python3 harness/coverage.py
+
+# Re-score every stored baseline under the current verifiers and report any
+# cohort whose recorded verdict and current verdict disagree.
+python3 harness/rescore.py
 
 # Regenerate one environment without invoking a model.
 python3 tasks/t18_unstated_domain_constraint/gen_env.py \
