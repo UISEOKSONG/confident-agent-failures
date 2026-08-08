@@ -3,9 +3,13 @@
 
 [Full technical report](docs/report.md) · [Evaluation protocol](SPEC.md) · [Aggregate results](results/README.md) · [Harness guide](docs/HARNESS.md) · [한국어 요약](README_KO.md)
 
-> **Status:** Four candidates clear the per-model Phase A/C gate defined in `SPEC.md`
-> section 9.0. None is *retained*: retention requires the same task to fail both models,
-> and the Phase D human ceiling has not run. The report keeps those limits explicit.
+> **Status:** Four tasks reproducibly defeat one of the two target models — Fable on
+> two, Sol on two — each measured on five distinct seeds with a deterministic verifier,
+> and each confirmed by an all-hint control that recovers 3/3. No single task defeats
+> both. Five attempts to build one failed, and section 4 explains why: one model's trap
+> turns out to act as a countermeasure to the other's. Under my own specification a task
+> is *retained* only if both models fail it, so these four are per-model candidates
+> rather than retained benchmark tasks, and the timed human ceiling has not yet run.
 
 Uiseok Song · 7 August 2026
 
@@ -13,14 +17,16 @@ Uiseok Song · 7 August 2026
 
 I designed twenty-three candidate tasks and one control probe for Fable in Claude Code
 and GPT-5.6 Sol in Codex. Seven candidates were evaluated on five distinct seeds per
-model with deterministic verifiers. Four candidates cleared the per-model gate in my
-protocol: for one of the two models, failure on at least four of five baseline trials
-and recovery on all three all-hint control trials.
+model with deterministic verifiers. Four of them defeat a target model reproducibly:
+at least four failures in five unhinted trials, and recovery on all three trials once
+every intended trap is disclosed. The control matters as much as the failure rate — it
+is what distinguishes a task that is hard for the reason I claim from a task that is
+merely hard.
 
-The result does not satisfy the strongest reading of the brief. I found two tasks that
-reliably fail for Fable and two that reliably fail for Sol, but no single task that
-fails for both. Five attempts to combine the two failure mechanisms did not work. Those
-negative results exposed an interaction between the mechanisms that I had not expected.
+Two of the four defeat Fable and two defeat Sol. No single task defeats both. I made
+five attempts to build one and all five failed, which turned out to be the more
+interesting result: the two failure mechanisms are not independent, and one acts as a
+countermeasure to the other. Section 4 of the full report works through it.
 
 | Task | Capability tested | Fable pass rate | Sol pass rate | All-hint control |
 |---|---|---:|---:|---:|
