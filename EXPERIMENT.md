@@ -2,7 +2,7 @@
 
 Date: 2026-08-02  
 Contract: `2026-08-02-v5`  
-Status: T10 rejected after one-seed screen; retained as development evidence
+Status: T10 rejected after one-seed screen; preserved as development evidence
 
 ## Question
 

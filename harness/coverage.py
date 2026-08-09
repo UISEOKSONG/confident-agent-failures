@@ -15,6 +15,12 @@ Fable baseline, for example, holds three five-seed cohorts under two contracts, 
 reporting that as 15/5 would claim the protocol was exceeded when no single contract
 ran more than ten trials.
 
+Two early revisions reused a contract id: T16's Sol screens before and after its unit
+correction, and T19 v2 and v3. This report cannot infer a construct boundary absent
+from the stored contract metadata, so it pools those same-id records. SPEC section 9.2
+and the full report identify the affected experiment ids; reported decisions use those
+explicit boundaries rather than the pooled coverage row.
+
 Usage: python3 harness/coverage.py [--runs ./runs] [--all-contracts]
 """
 import argparse
@@ -90,7 +96,7 @@ def main():
           % ("task", "model", "phase", "contract", "valid/required",
              "distinct seeds"))
     print("-" * 104)
-    screened_only = []
+    incomplete_pairs = []
     superseded_pairs = set()
     for task, model in pairs:
         for contract in sorted(
@@ -103,6 +109,8 @@ def main():
                      "%d/1" % len(smoke), len(set(smoke))))
         has_smoke = any(key[:3] == (task, model, "smoke_baseline")
                         for key in trials)
+        has_baseline = any(key[:3] == (task, model, "baseline")
+                           for key in trials)
 
         complete = True
         for phase, condition, need_trials, need_seeds in REQUIRED:
@@ -135,15 +143,17 @@ def main():
                          "%d" % len(seen),
                          len(set(s for s in seen if s is not None))))
         if not complete:
-            screened_only.append((task, model, has_smoke))
+            incomplete_pairs.append((task, model, has_smoke, has_baseline))
 
     print()
     print("Cohorts without a complete retention record: %d of %d"
-          % (len(screened_only), len(pairs)))
-    only_screened = [entry for entry in screened_only if entry[2]]
-    if only_screened:
-        print("Of those, decided on a single screening trial only: %d"
-              % len(only_screened))
+          % (len(incomplete_pairs), len(pairs)))
+    screened_no_baseline = [
+        entry for entry in incomplete_pairs if entry[2] and not entry[3]
+    ]
+    if screened_no_baseline:
+        print("Of those, screened but never progressed to Phase A: %d"
+              % len(screened_no_baseline))
         print("A phase-S verdict is one trial on one seed. Under SPEC section 9 a")
         print("candidate is retained only at no more than one pass in five distinct")
         print("seeds, so a single 'Pass' neither retains nor rejects a task on its own.")

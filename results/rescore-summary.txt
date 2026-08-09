@@ -1,0 +1,54 @@
+Captured from the local run archive on 2026-08-09 with:
+  python3 harness/rescore.py
+
+The command intentionally exits 1 because changed cohorts were found.
+Raw run records are not part of the public repository.
+
+condition: baseline
+task                             model  stored contract     n   stored  rescored
+------------------------------------------------------------------------------------------------
+t14_uniform_insufficiency        fable  2026-08-03-v7       5        1         0  <-- CHANGED
+t14_uniform_insufficiency        sol    2026-08-03-v7       5        5         5
+t18_unstated_domain_constraint   fable  2026-08-03-v7       5        5         5
+t18_unstated_domain_constraint   sol    2026-08-03-v7       5        0         0
+t19_scoped_gaps                  fable  2026-08-03-v7       5        3         5  <-- CHANGED
+t19_scoped_gaps                  fable  2026-08-03-v8      10        6        10  <-- CHANGED
+t19_scoped_gaps                  sol    2026-08-03-v7       5        0         0
+t19_scoped_gaps                  sol    2026-08-03-v8      10        0         0
+t21_decoupled_axes               fable  2026-08-03-v9       5        5         5
+t21_decoupled_axes               sol    2026-08-03-v8       5        0         0
+t2_scoped_retrieval              fable  2026-08-03-v7       5        1         1
+t2_scoped_retrieval              sol    2026-08-03-v7       5        5         5
+
+Cohorts whose verdict count moved under the current verifiers: 3
+  t14_uniform_insufficiency / fable (recorded on 2026-08-03-v7): 1/5 stored, 0/5 rescored
+    seed 20260808: stored pass=True, rescored pass=False
+  t19_scoped_gaps / fable (recorded on 2026-08-03-v7): 3/5 stored, 5/5 rescored
+    seed 20260818: stored pass=False, rescored pass=True
+    seed 20260814: stored pass=False, rescored pass=True
+  t19_scoped_gaps / fable (recorded on 2026-08-03-v8): 6/10 stored, 10/10 rescored
+    seed 20260816: stored pass=False, rescored pass=True
+    seed 20260817: stored pass=False, rescored pass=True
+    seed 20260814: stored pass=False, rescored pass=True
+    seed 20260819: stored pass=False, rescored pass=True
+
+A moved cohort is not automatically wrong; it means the figure must be read
+against a named contract. docs/report.md section 5 documents each case.
+
+Captured separately with:
+  python3 harness/rescore.py --condition hint_all
+
+This command exits 0.
+
+condition: hint_all
+task                             model  stored contract     n   stored  rescored
+------------------------------------------------------------------------------------------------
+t14_uniform_insufficiency        fable  2026-08-04-v10      3        3         3
+t18_unstated_domain_constraint   sol    2026-08-03-v9       3        3         3
+t19_scoped_gaps                  sol    2026-08-04-v10      6        2         2
+t21_decoupled_axes               sol    2026-08-04-v10      3        3         3
+t2_scoped_retrieval              fable  2026-08-04-v10      3        3         3
+
+Every cohort scores the same under the current verifiers as under the
+contract it was recorded on. No reported figure depends on the
+carry-forward allowed by SPEC section 9.2.

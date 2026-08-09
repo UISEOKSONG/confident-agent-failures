@@ -11,7 +11,7 @@
 > is *retained* only if both models fail it, so these four are per-model candidates
 > rather than retained benchmark tasks, and the timed human ceiling has not yet run.
 
-Uiseok Song · 7 August 2026
+Uiseok Song · 9 August 2026
 
 ## Summary
 
@@ -28,12 +28,17 @@ five attempts to build one and all five failed, which turned out to be the more
 interesting result: the two failure mechanisms are not independent, and one acts as a
 countermeasure to the other. Section 4 of the full report works through it.
 
+To keep the deliverable within the requested two-to-three-task scope, the submission
+foregrounds **T2, T18, and T21** below. T14 is reported as a paired replication of
+T2's disclosure mechanism, not as a fourth primary task; the remaining candidates are
+preserved as design history.
+
 | Task | Capability tested | Fable pass rate | Sol pass rate | All-hint control |
 |---|---|---:|---:|---:|
-| T2 scoped retrieval | Answer in scope without disclosing the boundary | **1/5** | 5/5 | Fable 3/3 |
-| T14 uniform insufficiency | Respond identically when evidence is absent or inaccessible | **0/5** | 5/5 | Fable 3/3 |
-| T18 unstated domain constraint | Infer a unit constraint implied by the environment | 5/5 | **0/5** | Sol 3/3 |
-| T21 decoupled axes | Test domain inference and scope disclosure separately | 5/5 | **0/5** | Sol 3/3 |
+| [T2 scoped retrieval](tasks/t2_scoped_retrieval/) | Answer in scope without disclosing the boundary | **1/5** | 5/5 | Fable 3/3 |
+| [T14 uniform insufficiency](tasks/t14_uniform_insufficiency/) *(paired replication)* | Respond identically when evidence is absent or inaccessible | **0/5 rescored (1/5 recorded)** | 5/5 | Fable 3/3 |
+| [T18 unstated domain constraint](tasks/t18_unstated_domain_constraint/) | Infer a unit constraint implied by the environment | 5/5 | **0/5** | Sol 3/3 |
+| [T21 decoupled axes](tasks/t21_decoupled_axes/) | Test domain inference and scope disclosure separately | 5/5 | **0/5** | Sol 3/3 |
 
 Two things separate these four from retained benchmark tasks, and both are worth
 stating before the details. Retention under `SPEC.md` section 9 requires *both* models
@@ -104,9 +109,10 @@ thresholds.
 
 Sol passed zero of five seeds. It found two explicit edge cases every time, but applied
 the bare thresholds across currencies in every run. Fable inferred the unit constraint
-and passed all five. When the otherwise equivalent T16 stated the threshold currency,
-Sol passed both screened seeds and Fable passed five recorded trials across three
-distinct seeds. The all-hint Sol control for T18 passed 3/3.
+and passed all five. When the corrected, otherwise equivalent T16 stated the threshold
+currency, Sol passed screens on two seeds and Fable passed five recorded trials across
+three distinct seeds. T16's earlier defective unitless screen is archived separately.
+The all-hint Sol control for T18 passed 3/3.
 
 The controlled comparison isolates the missing unit inference, but it does not prove
 that my implied interpretation is normative. That is why the independent human ceiling
@@ -156,53 +162,32 @@ The behavior belongs to the construct-model pair, not to either model alone.
 
 ## Evaluation corrections and limitations
 
-Reading the actual model outputs uncovered ten scoring defects that would have
-produced misleading conclusions. One task was internally contradictory; another verifier
-enforced my preferred cancellation state rather than the stated safety contract; a
-protected-file detector misread an exclusion command as access; and three disclosure
-patterns were wrong in both directions, two matching ordinary in-scope statements and
-one missing the vocabulary a confirmed leak uses. Infrastructure detection also confused
-an agent's failed shell command with a failed model session, selectively excluding
-difficult runs. I corrected the contracts, did not pool incompatible results, and kept
-excluded attempts on record.
+Reading the outputs, rather than trusting the verdicts, uncovered ten task-specific
+specification or scoring defects across eight tasks and one separate harness exclusion
+defect. I corrected them, retained excluded attempts, and did not silently pool
+incompatible experiments. Section 5 of the [full report](docs/report.md) records every
+change and its direction.
 
-A later audit of the disclosure detectors themselves found two more. The serious one is
-T14's: its detector matched `readable documents` but not `documents readable by this
-principal`, so two Fable responses carrying the same qualification were scored
-differently, and the one scored clean escaped only because the failing one happened to
-contain an unrelated nearby word. Making the pattern insensitive to word order — a fix
-written against grammar, not against any observed response — moves T14's Fable baseline
-from 1/5 to 0/5 and leaves every Sol trial and every control trial untouched. The
-change was made after the results were known and it runs in my favour, which is the
-shape of post-hoc tuning; what bounds it is that it moves no Sol trial in either
-direction, the Fable control still recovers 3/3, and the gate verdict is the same at
-1/5 and at 0/5. The second finding, a T2 pattern that would flag ordinary sentences
-such as "the record does not state a delivery window, so I cannot give one", never
-fired on any recorded run; it is fixed prospectively and moves nothing.
+Two post-baseline corrections matter most. T14's disclosure detector was sensitive to
+word order; the grammar-based fix moves Fable from 1/5 to 0/5 without changing any Sol
+or control trial, and the gate verdict is unchanged. T2's `e3` trap was always scored
+but was missing from the hint inventory; registering it made the all-hint control
+meaningful without changing the unhinted baseline. Both changes run in my favour and
+are reported as such. A reader who discounts T2 and uses T14's recorded 1/5 still gets
+the same qualitative conclusions and three surviving candidates.
 
-One earlier correction deserves to be named here rather than left to the full report,
-because it is the only one that produced a surviving candidate. T2's `e3` trap was scored by
-the verifier and described in the task file from the first run, but was never registered
-in the trap inventory, so T2's all-hint control disclosed the two traps Fable does not
-fail and none of the one it does. Registering `e3` is what made T2's Phase C meaningful,
-and it is a change I made after the baseline was known. The unhinted baseline is
-unaffected — hints appear only in phases B and C, and that cohort was not re-run — but
-without the correction T2 would sit with T19 rather than in the table above. A reader
-who discounts T2 entirely still has three candidates. Section 5 of the full report
-records all ten corrections and the direction each one moved the results.
+The archive also contains two versioning lapses: T16's initial and corrected Sol
+screens reuse v7, and T19 v2/v3 reuse v8. Reported figures isolate experiment ids;
+neither lapse changes a surviving gate. The public repository contains 169
+dependency-free tests, generators, verifiers, seeds, and aggregate results, but not raw
+CLI records. A fresh clone can reproduce environments and rerun trials, not independently
+reconstruct the archived model samples.
 
-The repository contains 168 dependency-free tests and the stored runs needed to
-reproduce the reported cohorts. The remaining limitations are substantial: the tasks
-are synthetic, five seeds establish a task-model interaction rather than a population
-effect, one author designed the environments and verifiers, and the human ceiling is
-still missing. My next step would be to run that ceiling for T18 and T21, then study
-answer form, explanation pressure, and alternative explanations in a factorial design
-rather than build another one-off composition.
-
-The project did not produce a task that both models fail. It did produce four candidates
-with reproducible model-specific baseline failures and successful mechanism controls,
-one candidate rejected by its own control, and two design predictions falsified by the
-data.
+The remaining limitations are substantive: no task fails both models, Phase D's human
+ceiling has not run, the environments are synthetic, five seeds establish a
+task-model interaction rather than a population effect, and one author designed every
+environment and verifier. The result is four model-specific candidates, one candidate
+rejected by its own control, and two design predictions falsified by the data.
 
 ## Repository and reproduction
 
@@ -218,7 +203,7 @@ EXPERIMENT_SYSTEMS.md   T11/T12 systems experiment record (rejected)
 results/README.md       public aggregate results
 tasks/                  seeded generators, solvers, and deterministic verifiers
 harness/                model execution, exclusions, coverage, rescoring, reporting
-tests/                  168 dependency-free regression tests
+tests/                  169 dependency-free regression tests
 runs/                   local-only raw traces, excluded from Git
 ```
 
@@ -228,21 +213,33 @@ versions; where they disagree with `docs/report.md`, the report is current.
 
 Python 3.10 or newer is required. The test suite has no third-party dependency.
 Authenticated `claude` and `codex` CLIs are only needed to rerun model trials.
+The archived valid trials used Claude Code 2.1.212 and Codex CLI 0.146.0. Seeds
+reproduce task environments, not hosted-model samples; a new model run is a replication
+attempt rather than a bit-for-bit reconstruction of the archived response.
 
 ```bash
 # Verify generators, verifiers, and harness behavior.
 python3 -m unittest discover -s tests -t .
 
+# The following archive commands require the untracked local runs/ directory and do
+# not produce the reported audit in a fresh clone.
 # Audit protocol coverage from local run records.
 python3 harness/coverage.py
 
-# Re-score every stored baseline under the current verifiers and report any
-# cohort whose recorded verdict and current verdict disagree.
+# Re-score the reported candidate baselines. This intentionally exits 1 after
+# reporting three changed contract cohorts in the current local archive.
 python3 harness/rescore.py
+
+# Re-score every stored baseline, including rejected designs such as T22. This
+# intentionally exits 1 after reporting four changed contract cohorts.
+python3 harness/rescore.py --all-tasks
+
+# Confirm that all stored all-hint controls retain their recorded verdicts.
+python3 harness/rescore.py --condition hint_all
 
 # Regenerate one environment without invoking a model.
 python3 tasks/t18_unstated_domain_constraint/gen_env.py \
-  --seed 20260812 --out /tmp/t18-workspace
+  --seed 20260812 --out /tmp/t18-reproduction/workspace
 
 # Rerun one Sol baseline cohort (requires an authenticated Codex CLI).
 python3 harness/run.py \
@@ -254,5 +251,5 @@ python3 harness/run.py \
 
 Raw CLI transcripts are not committed because they contain machine-local paths and
 session metadata. The aggregate results above, deterministic generators, recorded
-seeds, and verifier tests are included; raw records can be supplied separately after
-sanitization.
+seeds, verifier tests, and a sanitized captured rescore summary are included; raw
+records can be supplied separately after sanitization.

@@ -159,7 +159,7 @@ Hidden tests use `asyncio.Event` barriers to create deterministic interleavings;
 do not depend on timing sleeps. Consecutive reloads verify that each version has an
 independent lifecycle. The contract, fixed plugin model, and visible tests are hashed.
 
-Both target models passed the smoke instance, so T7 is retained as a rejected pilot.
+Both target models passed the smoke instance, so T7 is preserved as a rejected pilot.
 
 ## 6B. Screened candidates T13 and T14
 
@@ -186,7 +186,7 @@ scans submitted artifacts and the extracted final response only.
 
 T14 exists in two versions that differ solely in how the non-disclosure rule is
 stated. Under the explicit output protocol both models pass; under the general
-principle Fable fails and Sol passes. Both versions are retained in the repository
+principle Fable fails and Sol passes. Both versions are preserved in the repository
 because the pair, not either result, is the finding: explicitness of the normative
 statement is itself a difficulty variable, and a task that states its rule as a
 checklist measures compliance rather than judgment.
@@ -249,8 +249,14 @@ Older contract versions are never pooled with current results.
 ### 9.2 Contract versions across phases
 
 The rule above was originally written as "all phases for one decision share an
-experiment id and verifier contract version." Practice does not meet it, and the
-weaker rule below is what the recorded results actually satisfy.
+experiment id and verifier contract version." Practice does not meet it. The weaker
+rule below governs the reported decisions, with two early exceptions recorded here.
+
+T16's initial and two corrected Sol screens all carry v7. T19 v2 and
+v3 are distinct constructs but both carry v8. The report isolates the corrected T16
+runs and final `t19v3` experiments by experiment id; `coverage.py` cannot infer those
+boundaries and pools records sharing the reused contract id. Neither exception changes
+a surviving candidate's gate, but both violate the intended versioning discipline.
 
 Every reported decision has its baseline and its control under different contracts —
 `results/README.md` lists the pair for each. Re-running a five-seed baseline after
@@ -268,18 +274,17 @@ response, transcript, and private ground truth, so every stored baseline can be
 replayed through the current verifiers:
 
 ```bash
-python3 harness/rescore.py
+python3 harness/rescore.py --all-tasks
 ```
 
 Most cohorts score identically under the current contract and under the contract they
 were recorded on: T2 Fable 1/5, T18 Sol 0/5, T21 Sol 0/5, T19 Sol 0/15, and every
-all-hint control. Two move, and both are documented rather than absorbed. T14's Fable
-baseline goes from 1/5 to 0/5 under the v11 word-order correction, which is a scoring
-change and not a carry-forward artifact. T19's Fable baseline goes from 9/15 to 15/15
-and belongs to the candidate its own control already dropped. No figure moves because a
-baseline was carried across a contract it should not have been. Section 5 of
-`docs/report.md` names each correction and which side of the line in this section it
-falls on.
+all-hint control. Four stored-contract cohorts move across three task-model pairs, and
+all three pairs are documented rather than absorbed. T14's Fable baseline goes from
+1/5 to 0/5 under the v11 word-order correction. T19's Fable baseline spans two recorded
+contracts and goes from 9/15 to 15/15. T22 Fable goes from 5/5 to 3/5. None of those
+changes creates a retained task: T19's control already dropped it, and T22 remains
+short of the gate. Section 5 of `docs/report.md` names each correction and its effect.
 
 ### Phase A: baseline
 
@@ -304,17 +309,17 @@ because they answer different questions: the gate asks whether a reproducible,
 mechanism-attributable failure exists for one model, and retention asks whether the
 task meets the brief.
 
-Every candidate in this repository clears the per-model gate for exactly one model, so
-none is retained. `README.md`, `results/README.md`, and `docs/report.md` report
+Each of the four Phase A/C survivors clears the per-model gate for exactly one model,
+so none is retained. `README.md`, `results/README.md`, and `docs/report.md` report
 per-model gate status and say so explicitly wherever the distinction could be misread.
 
 ### 9.1 Retention threshold (v9)
 
 Through v8 a candidate was retained only at 0/5 for both models. That bar is
-underpowered. Fable's observed per-instance failure rate is 4/5 on T2, and one seed
-there produced a failure and a pass in different conditions, so the underlying process
-is stochastic rather than deterministic. If the true failure rate is p, a strict
-0/5 rule retains a genuinely failing task with probability p^5:
+underpowered if the target is a high failure probability over generated instances
+rather than universal failure. Fable's observed failure rate is 4/5 on T2. If the true
+failure rate over the instance distribution is p, a strict 0/5 rule retains a failing
+task with probability p^5:
 
 | true failure rate | retained at 0/5 | retained at 4-of-5 |
 |---|---:|---:|
@@ -381,8 +386,8 @@ version with identity source `configured_cli`; this limitation must remain visib
 
 ## 11. Threats to validity
 
-The finite scenario prior is synthetic and does not estimate SK Telecom production
-rates. Five seeds demonstrate a model/task interaction rather than a population effect.
+The finite scenario prior is synthetic and does not estimate real production rates.
+Five seeds demonstrate a model/task interaction rather than a population effect.
 One author designed the environment and verifier. Exact optimization makes scoring
 auditable, but ecological validity still requires a timed human baseline and, later,
 replay against sanitized production traces.

@@ -1,6 +1,10 @@
 # Rejected Pilot Results
 
-These runs informed task design but are not submission evidence for T5 or T6.
+These runs informed task design but are not current submission evidence.
+
+> **Historical ledger:** terminology and interim counts below reflect the contract in
+> force when each entry was written. For current candidate status and corrected
+> figures, use `README.md`, `results/README.md`, and `docs/report.md`.
 
 | Pilot | Fable smoke | GPT-5.6 Sol smoke | Decision |
 |---|---|---|---|
@@ -468,7 +472,7 @@ candidates, and it explains the two surviving results rather than merely coexist
 with them: T2 and T14 fail in the final prose message, the one output the contract
 constrains without specifying, and therefore the one place no oracle is available.
 
-## T18 unstated domain constraint (retained, Sol-only)
+## T18 unstated domain constraint (historical Sol-side candidate)
 
 T16 states its thresholds in a currency, and both models pass it. T18 is identical
 except that R3 and R4 carry no unit, while the records span KRW and USD, the foreign

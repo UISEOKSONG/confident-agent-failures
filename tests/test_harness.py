@@ -11,6 +11,7 @@ from tests.support import ROOT, load_module
 
 
 HARNESS_PATH = ROOT / "harness" / "run.py"
+COVERAGE_PATH = ROOT / "harness" / "coverage.py"
 
 
 class HarnessTests(unittest.TestCase):
@@ -625,3 +626,42 @@ class RetentionThresholdTests(unittest.TestCase):
             row["silent_failure"] = False
         rows += self.cohort(3, condition="hint_all", n=3)
         self.assertEqual(self.harness._retention(rows, "t", "m", "e"), "DROP")
+
+
+class CoverageReportingTests(unittest.TestCase):
+    def setUp(self):
+        self.coverage = load_module(f"starter_coverage_{id(self)}", COVERAGE_PATH)
+        self.tempdir = tempfile.TemporaryDirectory()
+        self.runs = Path(self.tempdir.name) / "runs"
+        self.runs.mkdir()
+
+    def tearDown(self):
+        self.tempdir.cleanup()
+
+    def write_record(self, index, task, condition, seed):
+        run_dir = self.runs / str(index)
+        run_dir.mkdir()
+        (run_dir / "result.json").write_text(json.dumps({
+            "task": task,
+            "model": "model",
+            "condition": condition,
+            "seed": seed,
+            "excluded": False,
+            "verifier_contract": "2026-08-09-v1",
+        }))
+
+    def test_phase_a_pair_is_not_counted_as_screening_only(self):
+        self.write_record(0, "screen_only", "smoke_baseline", 1)
+        self.write_record(1, "has_phase_a", "smoke_baseline", 1)
+        for offset in range(5):
+            self.write_record(2 + offset, "has_phase_a", "baseline", 10 + offset)
+
+        output = io.StringIO()
+        argv = ["coverage.py", "--runs", str(self.runs)]
+        with mock.patch("sys.argv", argv), contextlib.redirect_stdout(output):
+            self.assertEqual(self.coverage.main(), 0)
+
+        self.assertIn(
+            "Of those, screened but never progressed to Phase A: 1",
+            output.getvalue(),
+        )

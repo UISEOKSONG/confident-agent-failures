@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Re-score every stored baseline cohort under the current verifiers.
+"""Re-score stored baseline cohorts under the current verifiers.
 
 SPEC section 9.2 allows a baseline to be carried forward across a verifier
 correction when the correction cannot reach an unhinted cohort. That is a claim about
@@ -8,14 +8,15 @@ measurement: it replays each stored run's workspace, response, and transcript th
 the verifier as it exists today, and reports where the current contract disagrees with
 the verdict recorded at the time.
 
-The comparison is meaningful because scoring is deterministic and the runs directory
-keeps the full workspace, the extracted response, the transcript, and the private
-ground truth for every trial. No model is invoked and nothing is rewritten.
+By default this covers the reported candidate tasks; `--all-tasks` covers the entire
+archive. The comparison is meaningful because scoring is deterministic and the runs
+directory keeps the full workspace, the extracted response, the transcript, and the
+private ground truth for every trial. No model is invoked and nothing is rewritten.
 
 A cohort printed without CHANGED is one whose reported figure does not depend on the
 contract it was originally scored under. A cohort printed with CHANGED needs its
 figure read against the contract named in the output, and `docs/report.md` should say
-so; T19's Fable cohort is the known and documented case.
+so; T14, T19, and T22 are the known and documented cases.
 
 Usage:
     python3 harness/rescore.py                 # reported candidates, baseline only
@@ -144,7 +145,7 @@ def main():
                   % (move["seed"], move["stored"], move["rescored"]))
     print()
     print("A moved cohort is not automatically wrong; it means the figure must be read")
-    print("against a named contract. docs/report.md section 6 does this for T19.")
+    print("against a named contract. docs/report.md section 5 documents each case.")
     return 1
 
 

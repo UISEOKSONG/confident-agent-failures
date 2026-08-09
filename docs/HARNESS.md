@@ -10,6 +10,10 @@ transcript, verdict, model identity, exclusions, and usage metadata.
 - No third-party Python package is required.
 - Authenticated `claude` and `codex` CLIs are needed only for model trials.
 
+The archived valid trials used Claude Code 2.1.212 and Codex CLI 0.146.0. Task seeds
+reproduce the generated environments, but hosted model behavior is not version-pinned;
+a rerun is therefore a replication attempt, not a bit-for-bit response reconstruction.
+
 Claude JSON reports the runtime model identity. Codex JSONL does not expose the
 resolved runtime model, so Sol records the configured `--model` value with identity
 source `configured_cli`.
@@ -28,7 +32,7 @@ ground truth available to the harness only for scoring.
 
 ```bash
 python3 tasks/t18_unstated_domain_constraint/gen_env.py \\
-  --seed 20260812 --out /tmp/t18-workspace
+  --seed 20260812 --out /tmp/t18-reproduction/workspace
 ```
 
 ## Run a model cohort
@@ -43,6 +47,10 @@ python3 harness/run.py \\
 
 Use `--model fable`, `--model sol`, or `--model all`. An experiment id defines one
 cohort and should not be reused across incompatible verifier contracts.
+
+Historical T16 and T19 records predate consistent enforcement of that rule and reused
+contract ids across incompatible revisions. `coverage.py` cannot separate those rows;
+the full report identifies the corrected/final experiment ids used in reported figures.
 
 ## Evaluation phases
 
