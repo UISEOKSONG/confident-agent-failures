@@ -50,10 +50,11 @@ candidates against a per-model criterion, not completed benchmark tasks.
 
 ## Motivation and method
 
-I own the tool layer of an internal multi-agent platform with roughly 2,500 agents
-serving 2,200 employees. The recurring production problem is a constraint the agent
-either does not notice or cannot talk about, and end-to-end scoring is blind to it in
-two opposite ways.
+I built and am responsible for the resource layer — MCP servers, plugins, and tool
+integrations — of the next-generation extension of an internal multi-agent platform
+that currently runs roughly 2,500 agents for 2,200 employees. The recurring production
+problem is a constraint the agent either does not notice or cannot talk about, and
+end-to-end scoring is blind to it in two opposite ways.
 
 An environmental constraint produces the familiar case: the agent reasons coherently
 over the partial picture it has and returns a confident wrong answer, which scoring

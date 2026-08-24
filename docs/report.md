@@ -68,11 +68,13 @@ were screened at one seed and stopped; those are design results, not measurement
 
 ## 1. Why this task family
 
-I own the tool layer of an internal multi-agent platform, roughly 2,500 agents serving
-2,200 employees, and I debug user-reported failures by reading production traces. The
-failures I cannot currently measure come from constraints — a permission boundary, or
-something the environment implies that the specification never states — and end-to-end
-scoring is blind to them in two opposite ways.
+I built and am responsible for the resource layer — MCP servers, plugins, and tool
+integrations — of the next-generation extension of an internal multi-agent platform
+that currently runs roughly 2,500 agents for 2,200 employees, and I debug
+user-reported failures by reading production traces. The failures I cannot currently
+measure come from constraints — a permission boundary, or something the environment
+implies that the specification never states — and end-to-end scoring is blind to them
+in two opposite ways.
 
 When the constraint is environmental, the agent never notices it. It reasons correctly
 over the partial picture the constraint leaves it and returns a confident wrong answer.
